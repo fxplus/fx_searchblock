@@ -3,19 +3,19 @@
  * @file
  * Module file for plus_search_simple2.
  */
-
-
 function plus_search_simple2_menu(){
     return array(
-        'admin/build/something' => array(
-            'title' => 'Example Admin Form',
-            'description' => 'Admin form introduced by the MODULENAME module',
+        'admin/config/search/plus_search/simple_block' => array(
+            'title' => 'Plus Search Block',
+            'description' => 'Administer search block settings',
             'type' => MENU_NORMAL_ITEM,
+            'file' => 'plus_search_simple2.admin.inc',
             'page callback' => 'drupal_get_form',
+            'page arguments' => array('plus_search_simple2_admin_form'),
             'access arguments' => array('access administration pages'),
         ),
     );
-
+}
 
 /**
  * Implements hook_block_info().
@@ -32,10 +32,7 @@ function plus_search_simple2_block_info() {
  */
 function plus_search_simple2_block_view($delta = '') {
   if (user_access('search content')) {
-    $search_options = theme(
-      'links__menu_quick_links', 
-      array('links' => menu_navigation_links('menu-search-menu')
-    ));
+
     $search_form = drupal_get_form('plus_search_simple2_block_form');
 
     $search_form['submit'] = $search_form['actions']['submit'];
@@ -44,12 +41,17 @@ function plus_search_simple2_block_view($delta = '') {
 
     unset($search_form['actions']['submit']);
 
-    $search_form['search_options']['#prefix'] = '<div class="pull-left">';
-    $search_form['search_options']['#suffix'] = '</div>';
-    $search_form['search_options']['#markup'] = $search_options;
-    $search_form['search_options']['#weight'] = 9;
-    $search_form['search_options']['#attributes']['class'] = array('pull-left');
-
+    if (variable_get('plus_search_menu_on', 0)) {
+      $search_options = theme(
+        'links__menu_quick_links', 
+        array('links' => menu_navigation_links(variable_get('plus_search_menu_name', 'menu-search-menu'))
+      ));
+      $search_form['search_options']['#prefix'] = '<div class="pull-left">';
+      $search_form['search_options']['#suffix'] = '</div>';
+      $search_form['search_options']['#markup'] = $search_options;
+      $search_form['search_options']['#weight'] = 9;
+      $search_form['search_options']['#attributes']['class'] = array('pull-left');
+    }
 
     $block['content'] = $search_form;
     return $block;
