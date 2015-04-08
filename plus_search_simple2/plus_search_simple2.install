@@ -1,6 +1,6 @@
 <?php
 
-function hook_uninstall() {
+function plus_search_simple2_uninstall() {
   variable_del('plus_search_menu_on');
   variable_del('plus_search_menu_name');
 }
