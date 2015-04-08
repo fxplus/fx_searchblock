@@ -1,0 +1,7 @@
+name = Plus Search Simple
+description = FX plus library catalogue search block.
+package = FXplus Custom
+core = 7.x
+dependencies[] = search
+
+

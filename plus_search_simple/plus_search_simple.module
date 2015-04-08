@@ -1,0 +1,71 @@
+<?php
+/**
+ * @file
+ * Module file for plus_search_simple.
+ */
+/*
+/**
+ * Implements hook_block_info().
+ */
+function plus_search_simple_block_info() {
+  $blocks['form']['info'] = t('FX Plus Simple Catalog Search');
+  // Not worth caching.
+  $blocks['form']['cache'] = DRUPAL_NO_CACHE;
+  $blocks['form']['properties']['administrative'] = TRUE;
+  return $blocks;
+}
+/**
+ * Implements hook_block_view().
+ */
+function plus_search_simple_block_view($delta = '') {
+  if (user_access('search content')) {
+    $block['content'] = drupal_get_form('plus_search_simple_block_form');
+    return $block;
+  }
+}
+/**
+ * Implements hook_forms().
+ */
+function plus_search_simple_forms() {
+  $forms['plus_search_simple_block_form']= array(
+    'callback' => 'plus_search_simple_box',
+    'callback arguments' => array('plus_search_simple_block_form'),
+  );
+  return $forms;
+}
+/**
+ * Form builder; Output a search form for the search block's search box.
+ */
+function plus_search_simple_box($form, &$form_state, $form_id) {
+  // todo replace add_css with theme function?
+  // drupal_add_css(drupal_get_path('module', 'plus_search_simple').'/plus_search_simple.css');
+  $form['plus_search_simple_form'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Search The Library Catalogue',
+    '#title_display' => 'invisible',
+    '#default_value' => '',
+    '#attributes' => array(
+      'title' => t('Search the library'), 
+      'placeholder' => t('search the library'),
+      'class' => array(
+         'search-query',
+      ),
+    ),
+  );
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array('#type' => 'submit', '#value' => t('Search'));
+  $form['#submit'] = array('plus_search_simple_search_box_form_submit');
+  return $form;
+}
+
+function plus_search_simple_search_box_form_submit($form, &$form_state) {
+  $searchterm = $form_state['values']['plus_search_simple_form'];
+  _plus_search_query_catalog($searchterm);
+}
+function _plus_search_query_catalog($query) {
+  $catalog_path = "http://voyager.falmouth.ac.uk/vwebv/search";
+  $querystring = '?searchArg='.$query.'&searchCode=GKEY%5E*&limitTo=none&recCount=10&searchType=1&page.search.search.button=Search';
+  $skin = '&sk=faldefault';
+  drupal_goto($catalog_path.$querystring.$skin);
+}
+

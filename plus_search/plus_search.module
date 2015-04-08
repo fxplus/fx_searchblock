@@ -1,0 +1,144 @@
+<?php
+/**
+ * @file
+ * Module file for plus_search.
+ */
+/*
+
+/**
+ * Implements hook_block_info().
+ */
+function plus_search_block_info() {
+  $blocks['form']['info'] = t('FX Plus Search form');
+  // Not worth caching.
+  $blocks['form']['cache'] = DRUPAL_NO_CACHE;
+  $blocks['form']['properties']['administrative'] = TRUE;
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function plus_search_block_view($delta = '') {
+  if (user_access('search content')) {
+    $block['content'] = drupal_get_form('plus_search_block_form');
+    return $block;
+  }
+}
+/**
+ * Implements hook_forms().
+ */
+function plus_search_forms() {
+  $forms['plus_search_block_form']= array(
+    'callback' => 'plus_search_box',
+    'callback arguments' => array('plus_search_block_form'),
+  );
+  return $forms;
+}
+
+/**
+ * Form builder; Output a search form for the search block's search box.
+ */
+function plus_search_box($form, &$form_state, $form_id) {
+  // drupal_add_js(drupal_get_path('module', 'plus_search').'/plus_search.js', 'file');
+  // drupal_add_js(drupal_get_path('module', 'plus_search').'/ie/jquery.placeholder.min.js', 'file');
+  drupal_add_css(drupal_get_path('module', 'plus_search').'/plus_search.css');
+    $html = '<div class="pull-right"><a class="btn">Other search methods</a>
+<p>
+<ul class="list-unstyled"><li>One Stop Search (FU)</li><li>Electronic Journales (UoE)</li></ul>
+</p></div>';
+  
+  $form['plus_search_form'] = array(
+    '#type' => 'textfield',
+    '#title' => '',
+    '#title_display' => 'invisible',
+    '#default_value' => '',
+    '#attributes' => array(
+      'title' => t('Search the library'), 
+      'placeholder' => t('search the library'),
+      'class' => array(
+         'search-query',
+        ),
+
+    ),
+  );
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array('#type' => 'submit', '#value' => t('Search'));
+  // multiple choice in case js disabled
+  // hidden field to be updated by js
+  $form['#submit'] = array('plus_search_search_box_form_submit');
+  // _plus_search_form_add_searchtype($form);
+  return $form;
+}
+
+function plus_search_block_view_alter(&$data, $block) {
+  if ($block->module == 'plus_search') {
+
+  }
+}
+
+// overide submission of search query from block
+function plus_search_search_box_form_submit($form, &$form_state) {
+  // js interface selection
+  $searchterm = $form_state['values']['plus_search_form'];
+  // plus_search_select($form_state['values']['search_type']);
+  query_catalog($searchterm);
+}
+
+function query_catalog($query) {
+  $catalog_path = "http://voyager.falmouth.ac.uk/vwebv/search";
+  $querystring = '?searchArg='.$query.'&searchCode=GKEY%5E*&limitTo=none&recCount=10&searchType=1&page.search.search.button=Search';
+  $skin = '&sk=tomskin';
+  drupal_goto($catalog_path.$querystring.$skin);
+}
+
+//------ currently un-used -------
+/*
+function _plus_search_form_add_searchtype(&$form) {
+  $form['search_type'] = array(
+  '#type' => 'select',
+  '#options' => array(
+    'catalog' => t('Library Catalogue'),
+    //'website' => t('Library Website'),
+    'onestop' => t('One Stop Search (FU)'),
+    'exeter' => t('Exeter Catalogue (UoE)'),
+    'encore' => t('Encore (UoE)'),
+  ),
+  '#default_value' => 'catalog',
+  //'#description' => t('Where would you like to search?'),
+  );
+}
+function plus_search_select($search_type) {
+  if (isset($search_type)) {
+    switch ($search_type) {
+      case 'website':
+        // use normal search mechanism
+        drupal_set_message('You have searched the content of the library website. To search the library shelves instead, select \'library\'');
+        search_box_form_submit($form, $form_state);
+        break;
+      case 'onestop':
+        query_summon($searchterm);
+      case 'exeter':
+        query_exeter($searchterm);
+      case 'catalog':
+      case 'default':
+        // use normal search mechanism
+        query_catalog($searchterm);
+        break;
+    } 
+  } else {
+      query_catalog($searchterm);
+  }
+}
+function query_summon($query) {
+  $catalog_path = 'http://falmouth.summon.serialssolutions.com/search';
+  $querystring = '?utf8=%E2%9C%93&s.q='.$query.'&s.fvf%5B%5D=ContentType%2CNewspaper+Article%2Ct&keep_r=true';
+  // $skin = '&sk=faldefault';
+  drupal_goto($catalog_path.$querystring);
+}
+function query_exeter($query) {
+  $catalog_path = 'http://lib.exeter.ac.uk/search~S6/';
+  $querystring = '?searchtype=X&searcharg='.$query.'&searchscope=6';
+  drupal_goto($catalog_path.$querystring);
+}
+*/

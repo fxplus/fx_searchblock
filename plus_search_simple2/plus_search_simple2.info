@@ -1,0 +1,7 @@
+name = Plus Search Simple 2
+description = prototype search block
+package = FXplus Custom
+core = 7.x
+dependencies[] = search
+
+

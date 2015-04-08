@@ -1,0 +1,7 @@
+name = Plus Search
+description = Special FX plus library multi aspect search block.
+package = tombola
+core = 7.x
+dependencies[] = search
+
+
