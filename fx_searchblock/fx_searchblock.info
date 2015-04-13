@@ -1,0 +1,7 @@
+name = FXplus Search Block
+description = Search block for use primarily with the multiple library search facilities
+package = fxplus
+core = 7.x
+dependencies[] = search
+
+

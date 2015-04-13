@@ -1,0 +1,6 @@
+<?php
+
+function fx_searchblock_uninstall() {
+  variable_del('fx_searchblock_menu_on');
+  variable_del('fx_searchblock_menu_name');
+}

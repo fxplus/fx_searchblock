@@ -1,0 +1,101 @@
+<?php
+/**
+ * @file
+ * Module file for fx_searchblock.
+ */
+function fx_searchblock_menu(){
+    return array(
+        'admin/config/search/fx_searchblock/simple_block' => array(
+            'title' => 'FX Search Block',
+            'description' => 'Administer search block settings',
+            'type' => MENU_NORMAL_ITEM,
+            'file' => 'fx_searchblock.admin.inc',
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('fx_searchblock_admin_form'),
+            'access arguments' => array('access administration pages'),
+        ),
+    );
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function fx_searchblock_block_info() {
+  $blocks['form']['info'] = t('FX Plus Simple Catalog Search with menu');
+  // Not worth caching.
+  $blocks['form']['cache'] = DRUPAL_NO_CACHE;
+  $blocks['form']['properties']['administrative'] = TRUE;
+  return $blocks;
+}
+/**
+ * Implements hook_block_view().
+ */
+function fx_searchblock_block_view($delta = '') {
+  if (user_access('search content')) {
+
+    $search_form = drupal_get_form('fx_searchblock_block_form');
+
+    // $search_form['submit']['#weight'] = 1;
+    // $search_form['submit']['#attributes']['class'] = array('pull-left', 'btn', 'btn-large');
+
+    if (variable_get('fx_searchblock_menu_on', 0)) {
+      $search_options = theme(
+        'links__menu_quick_links', 
+        array('links' => menu_navigation_links(variable_get('fx_searchblock_menu_name', 'menu-search-menu'))
+      ));
+      // $search_form['search_options']['#prefix'] = '<div class="pull-left">';
+      // $search_form['search_options']['#suffix'] = '</div>';
+      $search_form['search_options']['#markup'] = $search_options;
+      $search_form['search_options']['#weight'] = 9;
+      // $search_form['search_options']['#attributes']['class'] = array('pull-left');
+    }
+    $block['title'] = 'Search the Library';
+    $block['content'] = $search_form;
+    return $block;
+  }
+}
+/**
+ * Implements hook_forms().
+ */
+function fx_searchblock_forms() {
+  $forms['fx_searchblock_block_form']= array(
+    'callback' => 'fx_searchblock_box',
+    'callback arguments' => array('fx_searchblock_block_form'),
+  );
+  return $forms;
+}
+/**
+ * Form builder; Output a search form for the search block's search box.
+ */
+function fx_searchblock_box($form, &$form_state, $form_id) {
+  // todo replace add_css with theme function?
+  // drupal_add_css(drupal_get_path('module', 'fx_searchblock').'/fx_searchblock.css');
+  $form['fx_searchblock_form'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Search The Library Catalogue',
+    '#title_display' => 'invisible',
+    '#default_value' => '',
+    '#attributes' => array(
+      'title' => t('Search the library'), 
+      'placeholder' => t('search the library'),
+      'class' => array(
+         'search-query',
+      ),
+    ),
+  );
+  $form['#submit'] = array('fx_searchblock_search_box_form_submit');
+  $form['actions'] = array('#type' => 'actions');
+  $form['submit'] = array('#type' => 'submit', '#value' => t('Search'));
+  return $form;
+}
+function fx_searchblock_search_box_form_submit($form, &$form_state) {
+  $searchterm = $form_state['values']['fx_searchblock_form'];
+  _fx_searchblock_query_catalog($searchterm);
+}
+
+function _fx_searchblock_query_catalog($query) {
+  $catalog_path = "http://voyager.falmouth.ac.uk/vwebv/search";
+  $querystring = '?searchArg='.$query.'&searchCode=GKEY%5E*&limitTo=none&recCount=10&searchType=1&page.search.search.button=Search';
+  $skin = '&sk=faldefault';
+  drupal_goto($catalog_path.$querystring.$skin);
+}
